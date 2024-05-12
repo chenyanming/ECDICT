@@ -3,7 +3,7 @@
 # vim: set ts=4 sw=4 tw=0 et :
 #======================================================================
 #
-# stardict.py - 
+# stardict.py -
 #
 # Created by skywind on 2011/05/13
 # Last Modified: 2019/11/09 23:47
@@ -17,6 +17,7 @@ import io
 import csv
 import sqlite3
 import codecs
+import re
 
 try:
     import json
@@ -43,7 +44,7 @@ def stripword(word):
 
 
 #----------------------------------------------------------------------
-# StarDict 
+# StarDict
 #----------------------------------------------------------------------
 class StarDict (object):
 
@@ -90,8 +91,8 @@ class StarDict (object):
         self.__conn.executescript(sql)
         self.__conn.commit()
 
-        fields = ( 'id', 'word', 'sw', 'phonetic', 'definition', 
-            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq', 
+        fields = ( 'id', 'word', 'sw', 'phonetic', 'definition',
+            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq',
             'exchange', 'detail', 'audio' )
         self.__fields = tuple([(fields[i], i) for i in range(len(fields))])
         self.__names = { }
@@ -121,7 +122,7 @@ class StarDict (object):
         if self.__conn:
             self.__conn.close()
         self.__conn = None
-    
+
     def __del__ (self):
         self.close()
 
@@ -191,7 +192,7 @@ class StarDict (object):
                 results.append(query_word.get(key.lower(), None))
             else:
                 results.append(None)
-        return tuple(results)
+        return results
 
     # 取得单词总数
     def count (self):
@@ -355,8 +356,8 @@ class DictMySQL (object):
         mysql_startup()
         if MySQLdb is None:
             raise ImportError('No module named MySQLdb')
-        fields = [ 'id', 'word', 'sw', 'phonetic', 'definition', 
-            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq', 
+        fields = [ 'id', 'word', 'sw', 'phonetic', 'definition',
+            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq',
             'exchange', 'detail', 'audio' ]
         self.__fields = tuple([(fields[i], i) for i in range(len(fields))])
         self.__names = { }
@@ -419,7 +420,6 @@ class DictMySQL (object):
         self.__conn.commit()
         return True
 
-    # 读取 mysql://user:passwd@host:port/database
     def __url_parse (self, url):
         if url[:8] != 'mysql://':
             return None
@@ -667,8 +667,8 @@ class DictCsv (object):
         if filename is not None:
             self.__csvname = os.path.abspath(filename)
         self.__codec = codec
-        self.__heads = ( 'word', 'phonetic', 'definition', 
-            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq', 
+        self.__heads = ( 'word', 'phonetic', 'definition',
+            'translation', 'pos', 'collins', 'oxford', 'tag', 'bnc', 'frq',
             'exchange', 'detail', 'audio' )
         heads = self.__heads
         self.__fields = tuple([ (heads[i], i) for i in range(len(heads)) ])
@@ -807,7 +807,7 @@ class DictCsv (object):
         else:
             fp = open(filename, 'w', encoding = codec, newline = '')
             writer = csv.writer(fp)
-        writer.writerow(self.__heads)   
+        writer.writerow(self.__heads)
         for row in self.__rows:
             newrow = []
             for n in row:
@@ -1111,7 +1111,7 @@ class LemmaDB (object):
         if stem not in self._stems:
             self._stems[stem] = {}
         if word not in self._stems[stem]:
-            self._stems[stem][word] = len(self._stems[stem]) 
+            self._stems[stem][word] = len(self._stems[stem])
         if word not in self._words:
             self._words[word] = {}
         if stem not in self._words[word]:
@@ -1340,7 +1340,7 @@ class DictHelper (object):
         print('imported %d entries'%count)
         return count
 
-    # 差异比较（utf-8 的.txt 文件，单词和后面音标释义用tab分割） 
+    # 差异比较（utf-8 的.txt 文件，单词和后面音标释义用tab分割）
     def deficit_tab_txt (self, dictionary, txt, outname, opts = ''):
         deficit = {}
         for line in codecs.open(txt, encoding = 'utf-8'):
@@ -1411,7 +1411,7 @@ class DictHelper (object):
         import codecs
         words = {}
         with codecs.open(filename, 'r', encoding = encoding) as fp:
-            text = []   
+            text = []
             word = None
             for line in fp:
                 line = line.rstrip('\r\n')
@@ -1439,7 +1439,7 @@ class DictHelper (object):
             sys.exit(1)
         if desc is None:
             desc = u'Create by stardict.py'
-        writer = writemdict.MDictWriter(wordmap, title = title, 
+        writer = writemdict.MDictWriter(wordmap, title = title,
                 description = desc)
         with open(outname, 'wb') as fp:
             writer.write(fp)
@@ -1800,7 +1800,7 @@ def open_local(filename):
     for dir in [base, base + '/share', base + '/share/stardict']:
         if not os.path.exists(dir):
             os.mkdir(dir)
-    fn = os.path.join(base + '/share/stardict', filename)   
+    fn = os.path.join(base + '/share/stardict', filename)
     return open_dict(fn)
 
 
@@ -1810,7 +1810,7 @@ def open_local(filename):
 # testing
 #----------------------------------------------------------------------
 if __name__ == '__main__':
-    db = os.path.join(os.path.dirname(__file__), 'test.db')
+    db = os.path.join(os.path.dirname(__file__), 'ecdict.db')
     my = {'host':'??', 'user':'skywind', 'passwd':'??', 'db':'skywind_t1'}
     def test1():
         t = time.time()
@@ -1883,7 +1883,12 @@ if __name__ == '__main__':
         return 0
     def test5():
         print(tools.validate_word('Hello World', False))
-    test3()
+    # test3()
+    # convert_dict("ecdict.db", "ecdict.csv")
+    sd = StarDict(db, False)
+    # print(sd.query('kiSs'))
+    # print(sd.query_batch(['give', 'kiss']))
+    # print(sd.match('kisshere', 10, True))
 
-
-
+    sentence = sys.argv[1]
+    print(json.dumps(sd.query_batch(re.split('[ ,.]+', sentence))))
