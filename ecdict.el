@@ -1,5 +1,17 @@
 ;;; ecdict/ecdict.el -*- lexical-binding: t; -*-
 
+
+(defvar ecdict-running-process nil)
+
+;;;###autoload
+(defun ecdict-stop-process ()
+  (interactive)
+  (when ecdict-running-process
+    (delete-process ecdict-running-process)
+    (setq ecdict-running-process nil)))
+
+
+
 (defun ecdict-process-filter (proc string)
   "Accumulates the strings received from the ECDICT process."
   (with-current-buffer (process-buffer proc)
@@ -43,6 +55,7 @@
 
 (defun ecdict-command (string &optional sentinel)
   "Segments a STRING of Japanese text using ECDICT and logs the result asynchronously."
+  (ecdict-stop-process)
   (let* ((original-output-buffer (get-buffer "*ecdict-output*"))
          (output-buffer (if (buffer-live-p original-output-buffer)
                             (progn (kill-buffer original-output-buffer)
@@ -54,6 +67,7 @@
                           :command `("python" ,(expand-file-name "modules/ECDICT/stardict.py" doom-private-dir) ,string)
                           :filter 'ecdict-process-filter
                           :sentinel (if sentinel sentinel 'ecdict-process-sentinel))))
+    (setq ecdict-running-process ecdict-process)
     (with-current-buffer output-buffer
       (setq-local original-string string))
     (process-send-eof ecdict-process)))
