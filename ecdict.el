@@ -6,8 +6,8 @@
 ;;;###autoload
 (defun ecdict-stop-process ()
   (interactive)
-  (when ecdict-running-process
-    (delete-process ecdict-running-process)
+  (when (process-live-p ecdict-running-process )
+    (stop-process ecdict-running-process)
     (setq ecdict-running-process nil)))
 
 
