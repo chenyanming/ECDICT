@@ -4,10 +4,10 @@
 (defvar ecdict-running-process nil)
 
 ;;;###autoload
-(defun ecdict-stop-process ()
+(defun ecdict-kill-process ()
   (interactive)
   (when (process-live-p ecdict-running-process )
-    (stop-process ecdict-running-process)
+    (kill-process ecdict-running-process)
     (setq ecdict-running-process nil)))
 
 
@@ -55,7 +55,7 @@
 
 (defun ecdict-command (string &optional sentinel)
   "Segments a STRING of Japanese text using ECDICT and logs the result asynchronously."
-  (ecdict-stop-process)
+  (ecdict-kill-process)
   (let* ((original-output-buffer (get-buffer "*ecdict-output*"))
          (output-buffer (if (buffer-live-p original-output-buffer)
                             (progn (kill-buffer original-output-buffer)
