@@ -1884,11 +1884,11 @@ if __name__ == '__main__':
     def test5():
         print(tools.validate_word('Hello World', False))
     # test3()
-    # convert_dict("ecdict.db", "ecdict.csv")
-    sd = StarDict(db, False)
+    convert_dict("ecdict.db", "ecdict.csv")
+    # sd = StarDict(db, False)
     # print(sd.query('kiSs'))
     # print(sd.query_batch(['give', 'kiss']))
     # print(sd.match('kisshere', 10, True))
 
-    sentence = sys.argv[1]
-    print(json.dumps(sd.query_batch(re.split('[ ,.]+', sentence))))
+    # sentence = sys.argv[1]
+    # print(json.dumps(sd.query_batch(re.split('[ ,.]+', sentence))))
